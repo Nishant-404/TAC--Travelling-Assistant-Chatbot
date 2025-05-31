@@ -1,0 +1,8 @@
+requirements 
+
+flask
+os
+csv
+datetime
+sqlite3
+requests
