@@ -69,7 +69,7 @@ PEXELS_API_KEY = 'your_pexels_api_key_here'
 
 🛠️ Installation & Setup
 1. Clone the Repository   
-git clone https://github.com/your-username/tac-travel-assistant.git
+git clone https://github.com/nishant-404/tac-travel-assistant.git
 cd tac-travel-assistant
 
 2. Create Virtual Environment (Optional but Recommended)
