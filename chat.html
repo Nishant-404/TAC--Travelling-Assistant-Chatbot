@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TAC Travel Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .spinner {
+            display: none;
+            margin: 10px auto;
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chat-links {
+            margin-bottom: 10px;
+        }
+
+        .chat-links a {
+            margin-right: 10px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+        }
+
+        .chat-place {
+            background: #f4f4f4;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 8px;
+        }
+
+        .chat-place img {
+            margin: 5px;
+            border-radius: 5px;
+            max-width: 100px;
+        }
+
+        .chat-place strong {
+            font-size: 16px;
+            display: block;
+            margin-top: 10px;
+        }
+
+        .chat-place p {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body class="chat-body">
+<div class="chat-container">
+    <div class="chat-header">
+        <h1>TAC</h1>
+        <div class="chat-links">
+            <a href="/logout">Logout</a> |
+            <a href="/history">History</a> |
+            <a href="/export_history" target="_blank">Export History</a>
+        </div>
+        <p>Welcome, {{ username }}! Plan your trip below →</p>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+        <!-- Messages will appear here -->
+    </div>
+
+    <div class="spinner" id="loading-spinner"></div>
+
+    <form id="chat-form" class="chat-form">
+        <input type="text" id="user-input" placeholder="Type your trip query…" required>
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById("chat-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const input = document.getElementById("user-input");
+        const message = input.value.trim();
+        if (!message) return;
+
+        const chatBox = document.getElementById("chat-messages");
+        const spinner = document.getElementById("loading-spinner");
+
+        chatBox.innerHTML += `<div class="chat-message user"><strong>You:</strong> ${message}</div>`;
+        input.value = "";
+        spinner.style.display = "block";
+
+        try {
+            const res = await fetch("/ask", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message }),
+            });
+
+            const data = await res.json();
+            spinner.style.display = "none";
+
+            chatBox.innerHTML += `<div class="chat-message bot"><strong>TAC:</strong> Here are the top places:</div>`;
+
+            if (data.places) {
+                data.places.forEach(place => {
+                    let placeHTML = `<div class="chat-place">`;
+
+                    // Place Name
+                    placeHTML += `<strong>${place.name}</strong>`;
+
+                    // Images
+                    if (place.images && place.images.length > 0) {
+                        placeHTML += place.images.map(img =>
+                            `<img src="${img}" alt="${place.name} image">`
+                        ).join("");
+                    }
+
+                    // Description
+                    if (place.description) {
+                        placeHTML += `<p>${place.description}</p>`;
+                    }
+
+                    placeHTML += `</div>`;
+                    chatBox.innerHTML += placeHTML;
+                });
+            }
+
+            if (data.hotels) {
+                chatBox.innerHTML += `
+                    <div class="chat-hotels">
+                        <strong>Hotels:</strong> ${data.hotels.join(", ")}
+                    </div>
+                `;
+            }
+
+            if (data.transport) {
+                chatBox.innerHTML += `
+                    <div class="chat-transport">
+                        <strong>Transport:</strong> ${data.transport}
+                    </div>
+                `;
+            }
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (err) {
+            spinner.style.display = "none";
+            chatBox.innerHTML += `<div class="chat-message bot error"><strong>Error:</strong> ${err.message}</div>`;
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your History - TAC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="history-body">
+    <div class="history-container">
+        <h2>{{ username }}'s Trip History</h2>
+        <a href="/chat">← Back to Chat</a>
+        <ul class="history-list">
+            {% for entry in history %}
+            <li>
+                <strong>You:</strong> {{ entry.user_message }}<br>
+                <strong>TAC:</strong> {{ entry.ai_response }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html> 
